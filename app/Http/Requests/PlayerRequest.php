@@ -19,7 +19,7 @@ class PlayerRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'line_id' => ['required', 'exists:lines,id'],
             'shirt_number' => ['required', 'numeric', 'between:1,99', Rule::unique('players', 'shirt_number')->ignore($this->player)],
-            'in_lineup' => ['required', 'boolean', new LineupPlayersNumber()],
+            'in_lineup' => ['required', 'boolean', (new LineupPlayersNumber())->ignore($this->player)],
         ];
     }
 }

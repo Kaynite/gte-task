@@ -15,6 +15,7 @@ class LineFactory extends Factory
         return [
             'name' => fake()->word(),
             'short_name' => Str::upper(fake()->lexify('???')),
+            'max_in_lineup' => fake()->numberBetween(1, 10),
         ];
     }
 }

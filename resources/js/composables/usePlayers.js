@@ -6,12 +6,59 @@ export default function usePlayers() {
     const isLoading = ref(false);
 
     const getPlayers = () => {
-        isLoading.value = true
-        axios.get("api/players")
-            .then(({ data }) => {
-                players.value = data.data;
-                isLoading.value = false;
-            });
+        isLoading.value = true;
+        axios.get("api/players").then(({ data }) => {
+            players.value = data.data;
+            isLoading.value = false;
+        });
+    };
+
+    const savePlayer = (data) => {
+        return new Promise((resolve, reject) => {
+            axios
+                .post("api/players", data)
+                .then(() => {
+                    ElNotification({
+                        title: "Success",
+                        message: "Player was saved successfully!",
+                        type: "success",
+                    });
+                    getPlayers();
+                    resolve();
+                })
+                .catch(({ response }) => {
+                    ElNotification({
+                        title: "Error",
+                        message: response.data.message,
+                        type: "error",
+                    });
+                    reject(response.data.message);
+                });
+        });
+    };
+
+    const updatePlayer = (player) => {
+        return new Promise((resolve, reject) => {
+            axios
+                .put(`api/players/${player.id}`, player)
+                .then(() => {
+                    ElNotification({
+                        title: "Success",
+                        message: "Player was saved successfully!",
+                        type: "success",
+                    });
+                    getPlayers();
+                    resolve();
+                })
+                .catch(({ response }) => {
+                    ElNotification({
+                        title: "Error",
+                        message: response.data.message,
+                        type: "error",
+                    });
+                    reject(response.data.message);
+                });
+        });
     };
 
     const deletePlayer = (id) => {
@@ -39,5 +86,7 @@ export default function usePlayers() {
         isLoading,
         deletePlayer,
         getPlayers,
+        savePlayer,
+        updatePlayer,
     };
 }

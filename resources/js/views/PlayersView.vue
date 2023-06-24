@@ -1,13 +1,14 @@
 <script setup>
 import { ref, reactive } from "vue";
-import axios from "axios";
-import useLines from "@/composables/useLines";
 import usePlayers from "@/composables/usePlayers";
+import CreatePlayerModal from "@/components/CreatePlayerModal.vue";
+import EditPlayerModal from "@/components/EditPlayerModal.vue";
 
-const { lines, getLines } = useLines();
-const { deletePlayer, getPlayers, players, isLoading } = usePlayers();
+const { players, getPlayers, savePlayer, updatePlayer, deletePlayer, isLoading } = usePlayers();
 
-const dialogFormVisible = ref(false);
+const createFormVisible = ref(false);
+const editFormVisible = ref(false);
+
 const form = reactive({
     name: "",
     shirt_number: "",
@@ -15,76 +16,49 @@ const form = reactive({
     in_lineup: false,
 });
 
-const savePlayer = () => {
-    axios
-        .post("api/players", form)
-        .then(() => {
-            dialogFormVisible.value = false;
-            ElNotification({
-                title: "Success",
-                message: "Player was saved successfully!",
-                type: "success",
-            });
-            getPlayers();
-        })
-        .catch(({ response }) => {
-            ElNotification({
-                title: "Error",
-                message: response.data.message,
-                type: "error",
-            });
-        })
-        .finally(() => {
-            isLoading.value = false;
-        });
+const editForm = ref({});
+
+const save = async () => {
+    try {
+        await savePlayer(form);
+        createFormVisible.value = false;
+    } catch {}
+}
+
+const update = async () => {
+    try {
+        await updatePlayer(editForm.value);
+        editFormVisible.value = false;
+    } catch {}
+}
+
+const edit = (player) => {
+    editFormVisible.value = true;
+    editForm.value = player;
 };
 
-getLines();
 getPlayers();
 </script>
 
 <template>
     <!-- Form -->
-    <el-button @click="dialogFormVisible = true" type="primary">
+    <el-button @click="createFormVisible = true" type="primary">
         Add new player
     </el-button>
 
-    <el-dialog v-model="dialogFormVisible" title="Add new player">
-        <el-form :model="form">
-            <el-form-item label="Name" label-width="140px">
-                <el-input v-model="form.name" autocomplete="off" />
-            </el-form-item>
-            <el-form-item label="Shirt Number" label-width="140px">
-                <el-input v-model="form.shirt_number" autocomplete="off" />
-            </el-form-item>
-            <el-form-item label="Line" label-width="140px">
-                <el-select
-                    v-model="form.line_id"
-                    class="m-2"
-                    style="width: 100%;"
-                    placeholder="Select"
-                >
-                    <el-option
-                        v-for="line in lines"
-                        :key="line.id"
-                        :label="line.name"
-                        :value="line.id"
-                    />
-                </el-select>
-            </el-form-item>
-            <el-form-item label="Shirt Number" label-width="140px">
-                <el-switch v-model="form.in_lineup" />
-            </el-form-item>
-        </el-form>
-        <template #footer>
-            <span class="dialog-footer">
-                <el-button @click="dialogFormVisible = false">Cancel</el-button>
-                <el-button type="primary" @click="savePlayer">
-                    Confirm
-                </el-button>
-            </span>
-        </template>
-    </el-dialog>
+    <EditPlayerModal
+        :is-visiable="editFormVisible"
+        :form="editForm"
+        @cancel="editFormVisible = false"
+        @confirm="update"
+    />
+
+    <CreatePlayerModal
+        :is-visiable="createFormVisible"
+        :form="form"
+        @cancel="createFormVisible = false"
+        @confirm="save"
+    />
 
     <el-scrollbar>
         <el-table :data="players" v-loading="isLoading">
@@ -98,13 +72,28 @@ getPlayers();
             </el-table-column>
             <el-table-column label="In Lineup?">
                 <template #default="scope">
-                    <el-tag class="ml-2" type="success" v-if="scope.row.in_lineup">Yes</el-tag>
-                    <el-tag class="ml-2" type="error" v-else="scope.row.in_lineup">No</el-tag>
+                    <el-tag
+                        class="ml-2"
+                        type="success"
+                        v-if="scope.row.in_lineup"
+                        >Yes</el-tag
+                    >
+                    <el-tag
+                        class="ml-2"
+                        type="error"
+                        v-else="scope.row.in_lineup"
+                        >No</el-tag
+                    >
                 </template>
             </el-table-column>
             <el-table-column fixed="right" label="Actions" width="300">
                 <template #default="scope">
-                    <el-button type="primary" size="small">Edit</el-button>
+                    <el-button
+                        type="primary"
+                        size="small"
+                        @click="edit(scope.row)"
+                        >Edit</el-button
+                    >
                     <el-popconfirm
                         width="250"
                         confirm-button-text="OK"
@@ -114,9 +103,9 @@ getPlayers();
                         @confirm="deletePlayer(scope.row.id)"
                     >
                         <template #reference>
-                            <el-button type="danger" size="small"
-                                >Delete</el-button
-                            >
+                            <el-button type="danger" size="small">
+                                Delete
+                            </el-button>
                         </template>
                     </el-popconfirm>
                 </template>
