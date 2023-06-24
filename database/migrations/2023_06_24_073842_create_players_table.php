@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('lines', function (Blueprint $table) {
+        Schema::create('players', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('short_name', 3);
-            $table->unsignedTinyInteger('max_in_lineup');
+            $table->unsignedTinyInteger('shirt_number');
+            $table->boolean('in_lineup')->default(false);
+            $table->foreignId('line_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
     }
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('lines');
+        Schema::dropIfExists('players');
     }
 };

@@ -16,18 +16,22 @@ class LineSeeder extends Seeder
             [
                 'name' => 'Goalkeeper',
                 'short_name' => 'GK',
+                'max_in_lineup' => 1,
             ],
             [
                 'name' => 'Defender',
                 'short_name' => 'DEF',
+                'max_in_lineup' => 10,
             ],
             [
                 'name' => 'Midfielder',
                 'short_name' => 'MDF',
+                'max_in_lineup' => 10,
             ],
             [
                 'name' => 'Attacker',
                 'short_name' => 'ATK',
+                'max_in_lineup' => 10,
             ],
         ];
 

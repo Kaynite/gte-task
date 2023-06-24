@@ -1,0 +1,12 @@
+.pitch {
+    display: flex !important;
+    flex-direction: column-reverse;
+    border: 1px solid;
+    justify-content: space-around;
+
+    div {
+        width: 100%;
+        display: flex;
+        justify-content: space-evenly;
+    }
+}

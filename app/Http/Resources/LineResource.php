@@ -13,6 +13,7 @@ class LineResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'short_name' => $this->short_name,
+            'max_in_lineup' => $this->max_in_lineup,
         ];
     }
 }

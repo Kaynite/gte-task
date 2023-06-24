@@ -16,6 +16,7 @@ class LineRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'short_name' => ['required', 'string', 'max:3'],
+            'max_in_lineup' => ['required', 'numeric', 'min:1'],
         ];
     }
 }

@@ -1,79 +1,81 @@
 <script setup>
 import { ref, reactive } from "vue";
-import axios from "axios";
 import useLines from "@/composables/useLines";
+import CreateLineModal from "../components/CreateLineModal.vue";
+import EditLineModal from "../components/EditLineModal.vue";
 
-const { deleteLine, getLines, lines } = useLines();
+const { lines, getLines, saveLine, updateLine, deleteLine, isLoading } = useLines();
 
-const dialogFormVisible = ref(false);
+const createFormVisible = ref(false);
+const editFormVisible = ref(false);
 const form = reactive({
     name: "",
     short_name: "",
+    max_in_lineup: "",
 });
+const editForm = reactive({});
 
-const saveLine = () => {
-    axios
-        .post("api/lines", form)
-        .then(() => {
-            dialogFormVisible.value = false;
-            ElNotification({
-                title: "Success",
-                message: "Line was saved successfully!",
-                type: "success",
-            });
-            getLines();
-        })
-        .catch(({ response }) => {
-            ElNotification({
-                title: "Error",
-                message: response.data.message,
-                type: "error",
-            });
-        });
+const editLine = (line) => {
+    editForm.id = line.id;
+    editForm.name = line.name;
+    editForm.short_name = line.short_name;
+    editForm.max_in_lineup = line.max_in_lineup;
+    editFormVisible.value = true;
 };
+
+const update = async () => {
+    try {
+        await updateLine(editForm);
+        editFormVisible.value = false;
+    } catch {}
+};
+
+const save = async () => {
+    try {
+        await saveLine(form);
+        createFormVisible.value = false;
+    } catch {}
+}
 
 getLines();
 </script>
 
 <template>
     <!-- Form -->
-    <el-button @click="dialogFormVisible = true" type="primary">
+    <el-button @click="createFormVisible = true" type="primary">
         Add new line
     </el-button>
 
-    <el-dialog v-model="dialogFormVisible" title="Add new line">
-        <el-form :model="form">
-            <el-form-item label="Name" label-width="140px">
-                <el-input v-model="form.name" autocomplete="off" />
-            </el-form-item>
-            <el-form-item label="Short Name" label-width="140px">
-                <el-input v-model="form.short_name" autocomplete="off" />
-            </el-form-item>
-        </el-form>
-        <template #footer>
-            <span class="dialog-footer">
-                <el-button @click="dialogFormVisible = false">Cancel</el-button>
-                <el-button type="primary" @click="saveLine">
-                    Confirm
-                </el-button>
-            </span>
-        </template>
-    </el-dialog>
+    <EditLineModal
+        :is-visiable="editFormVisible"
+        :form="editForm"
+        @confirm="update"
+        @cancel="editFormVisible = false"
+    />
+
+    <CreateLineModal
+        :is-visiable="createFormVisible"
+        :form="form"
+        @confirm="save"
+        @cancel="createFormVisible = false"
+    />
 
     <el-scrollbar>
-        <el-table :data="lines">
+        <el-table :data="lines" v-loading="isLoading">
             <el-table-column prop="id" label="#" width="140" />
             <el-table-column prop="name" label="Name" width="120" />
             <el-table-column prop="short_name" label="Short name" />
+            <el-table-column prop="max_in_lineup" label="Max. in Lineup" />
             <el-table-column fixed="right" label="Operations">
                 <template #default="scope">
-                    <el-button type="primary" size="small">Edit</el-button>
+                    <el-button
+                        type="primary"
+                        size="small"
+                        @click="editLine(scope.row)"
+                        >Edit</el-button
+                    >
                     <el-popconfirm
                         width="250"
-                        confirm-button-text="OK"
-                        cancel-button-text="No, Thanks"
-                        :icon="InfoFilled"
-                        icon-color="#ff5e5e"
                         title="Are you sure you want to delete this?"
                         @confirm="deleteLine(scope.row.id)"
                     >
